@@ -44,40 +44,56 @@ int line_count;
     struct identifier idArray[100];
     int i = 0;
 
-    struct identifier* get_id(struct identifier id){
-        int j;
-        for(j = 0; j <= i; j++){
-            if(strcmp(idArray[j].name, id.name) == 0){
-                return &idArray[j];
+    struct identifier* checkid(struct identifier id){
+        int k;
+        for(k = 0; k <= i; k++){
+            if(strcmp(idArray[k].name, id.name) == 0){
+                return &idArray[k];
             }
         }
         return NULL;
     }
 
-    void PrintOutput(char *s){
-        fprintf(stdout, "%s", s);
-        fprintf(yyout, "%s", s);
-    }
+    
 }
 
 
 %start program
-
+%type <id> TOK_ID
 %type <int_value> TOK_INTNUM  
 %type <float_value> TOK_FLOATNUM
-%type <id> TOK_ID
 %type <id> E
+
+
 /*left associative*/
 %left TOK_ADD
 %left TOK_MUL
 
 %%
 program : TOK_MAIN_FUNCTION TOK_OPEN_BRACKET Statements TOK_CLOSE_BRACKET
-Statements : /*Null*/ 
-    | Statement TOK_SEMICOLON Statements ;
-Statement : TOK_INT TOK_ID 
+Statements : | Statement TOK_SEMICOLON Statements ;
+Statement : TOK_ID TOK_ASSIGN E
                 {
-                        struct identifier *id=get_id($2);
+                    
+                        struct identifier *id=checkid($1);
+                        if(!id)
+                        {
+                                fprintf(stderr,"Line No %d : %s is used but is not declared\n",$1.line_count,$1.name);
+                                return -1;
+                        }
+                        if(id->type != $3.type){
+                                        
+                                        fprintf(stderr,"type error : Types are mismatched at line %d\n",$1.line_count);
+                                        return -1;
+                                }
+                                else if(id->type==1)
+                                        id->floatvalue=$3.floatvalue;
+                                else
+                                        id->itegervalue = $3.itegervalue;
+                }
+            |TOK_INT TOK_ID 
+                {
+                        struct identifier *id=checkid($2);
                         if(id) // id is already in array
                         {
                                 fprintf(stderr,"%s parsing error.\n",id->name);
@@ -91,7 +107,7 @@ Statement : TOK_INT TOK_ID
                 }
             | TOK_FLOAT TOK_ID 
                 {
-                        struct identifier *id=get_id($2);
+                        struct identifier *id=checkid($2);
                         if(id)
                         {
                                 fprintf(stderr,"%s parsing error.\n",id->name);
@@ -102,27 +118,9 @@ Statement : TOK_INT TOK_ID
                         strcpy(idArray[i].name,$2.name);
 
                 }
-            | TOK_ID TOK_ASSIGN E
-                {
-                    
-                        struct identifier *id=get_id($1);
-                        if(!id)
-                        {
-                                fprintf(stderr,"Line No %d : %s is used but is not declared\n",$1.line_num,$1.name);
-                                return -1;
-                        }
-                        if(id->type != $3.type){
-                                        
-                                        fprintf(stderr,"type error : Types are mismatched at line %d\n",$1.line_count);
-                                        return -1;
-                                }
-                                else if(id->type==1)
-                                        id->floatvalue=$3.floatvalue;
-                                else
-                                        id->itegervalue = $3.itegervalue;
-                }
+            
             | TOK_PRINTVAR TOK_ID {
-                struct identifier *id = get_id($2);
+                struct identifier *id = checkid($2);
                     if(id){
                                 if(id->type==0){
                                 fprintf(stdout,"%s = %d (int)\n",id->name,id->itegervalue);
@@ -141,7 +139,17 @@ Statement : TOK_INT TOK_ID
                                 return -1;
                         }
             }
-E : TOK_INTNUM
+E : TOK_ID
+        {
+            struct identifier *id=checkid($1);
+            if(!id)
+            {
+                fprintf(stderr,"%s is not declared\n",$1.name);
+                return -1;
+            }
+            $$ = *id;
+        }
+    |TOK_INTNUM
         {
             $$.itegervalue=$1;
             $$.type=0;
@@ -151,16 +159,7 @@ E : TOK_INTNUM
             $$.floatvalue=$1;
             $$.type=1;
         }
-    | TOK_ID
-        {
-            struct identifier *id=get_id($1);
-            if(!id)
-            {
-                fprintf(stderr,"%s is not declared\n",$1.name);
-                return -1;
-            }
-            $$ = *id;
-        }
+    
     | E TOK_ADD E
         {
             if($1.type != $3.type){
@@ -193,9 +192,8 @@ E : TOK_INTNUM
     }
 %%
 int yyerror(char *s){
-    // print error message
-fprintf(stdout, "syntax error\n");
-return 0; 
+    fprintf(stdout, "syntax error\n");
+    return 0; 
 }
 
 int main(int argc, char **argv)
