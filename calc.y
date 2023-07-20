@@ -7,7 +7,8 @@ extern FILE *yyin;
 extern FILE *yyout;
 %}
 
-/*all possible tokens*/
+/*all  tokens*/
+
 %token TOK_MAIN_FUNCTION
 %token TOK_OPEN_BRACKET 
 %token TOK_CLOSE_BRACKET 
@@ -21,7 +22,8 @@ extern FILE *yyout;
 %token TOK_INTNUM 
 %token TOK_FLOATNUM
 
-/*all possible types*/
+/*all types*/
+
 %union{
 int int_value;
 float float_value;
