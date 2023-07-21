@@ -2,11 +2,9 @@
 
 ## Group Details : Members 02
 
-      No       Name              Reg No      Index No
-      01   W.T. Geenath        2020/CS/061   20000618
-      02   W.R.A.S.Kavishka    2020/CS/096   20000962
-
-
+      No       Name              Reg No      Index No           Email
+      01   W.T. Geenath        2020/CS/061   20000618   2020cs061@stu.ucsc.cmb.ac.lk
+      02   W.R.A.S.Kavishka    2020/CS/096   20000962   2020cs096@stu.ucsc.cmb.ac.lk
 
 ## Tested Environment
 

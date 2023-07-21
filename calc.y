@@ -43,7 +43,7 @@ int line_count;
 }
 
 %code{
-    struct identifier idArray[100];
+    struct identifier idArray[1000];
     int i = 0;
 
     struct identifier* checkid(struct identifier id){
